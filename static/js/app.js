@@ -1,7 +1,7 @@
-// Place url in a constant variable
+// URL file where to get Json data  
 const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
 
-// Fetch the JSON data and console log it
+// use D3 to show JSON data
 d3.json(url).then(function(data) {
   console.log(data);
 });
@@ -44,6 +44,10 @@ function init() {
     });
 };
 
+// Display the sample metadata, i.e., an individual's demographic information.
+// Display each key-value pair from the metadata JSON object somewhere on the page.
+// -------------------------
+
 // Function that populates metadata info
 function buildMetadata(sample) {
 
@@ -77,7 +81,11 @@ function buildMetadata(sample) {
 
 };
 
+
+// Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+// -------------------
 // Function that builds the bar chart
+
 function buildBarChart(sample) {
 
     // Use D3 to retrieve all of the data
@@ -124,6 +132,8 @@ function buildBarChart(sample) {
     });
 };
 
+// Create a bubble chart that displays each sample.
+// -------------------
 // Function that builds the bubble chart
 function buildBubbleChart(sample) {
 
@@ -172,6 +182,8 @@ function buildBubbleChart(sample) {
     });
 };
 
+// Update all the plots when a new sample is selected. Additionally, you are welcome to create any layout that you would like for your dashboard
+// --------------------------------------------
 // Function that updates dashboard when sample is changed
 function optionChanged(value) { 
 

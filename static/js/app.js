@@ -1,3 +1,6 @@
+// Interactive Visualation Challenge
+// Java script challenge week 14
+
 // URL file where to get Json data  
 const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
 
@@ -132,55 +135,6 @@ function buildBarChart(sample) {
     });
 };
 
-// Create a bubble chart that displays each sample.
-// -------------------
-// Function that builds the bubble chart
-function buildBubbleChart(sample) {
-
-    // Use D3 to retrieve all of the data
-    d3.json(url).then((data) => {
-        
-        // Retrieve all sample data
-        let sampleInfo = data.samples;
-
-        // Filter based on the value of the sample
-        let value = sampleInfo.filter(result => result.id == sample);
-
-        // Get the first index from the array
-        let valueData = value[0];
-
-        // Get the otu_ids, lables, and sample values
-        let otu_ids = valueData.otu_ids;
-        let otu_labels = valueData.otu_labels;
-        let sample_values = valueData.sample_values;
-
-        // Log the data to the console
-        console.log(otu_ids,otu_labels,sample_values);
-        
-        // Set up the trace for bubble chart
-        let trace1 = {
-            x: otu_ids,
-            y: sample_values,
-            text: otu_labels,
-            mode: "markers",
-            marker: {
-                size: sample_values,
-                color: otu_ids,
-                colorscale: "Earth"
-            }
-        };
-
-        // Set up the layout
-        let layout = {
-            title: "Bacteria Per Sample",
-            hovermode: "closest",
-            xaxis: {title: "OTU ID"},
-        };
-
-        // Call Plotly to plot the bubble chart
-        Plotly.newPlot("bubble", [trace1], layout)
-    });
-};
 
 // Update all the plots when a new sample is selected. Additionally, you are welcome to create any layout that you would like for your dashboard
 // --------------------------------------------
@@ -193,8 +147,7 @@ function optionChanged(value) {
     // Call all functions 
     buildMetadata(value);
     buildBarChart(value);
-    buildBubbleChart(value);
-    buildGaugeChart(value);
+
 };
 
 // Call the initialize function

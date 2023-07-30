@@ -1,154 +1,114 @@
-// Interactive Visualation Challenge
-// Java script challenge week 14
+// set constant of Data URL from Json Format
+const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
 
-// URL file where to get Json data  
-const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
-
-// use D3 to show JSON data
+// Fetch the JSON data and perform all the necessary operations
 d3.json(url).then(function(data) {
-  console.log(data);
+  // Get the sample names for the dropdown menu
+  const names = data.names;
+  const dropdownMenu = d3.select("#selDataset");
+
+  // Initialize the dashboard with the first sample
+  initDashboard(data, names[0]);
+
+  // Populate the dropdown menu with sample names
+  names.forEach((id) => {
+    dropdownMenu.append("option").text(id).property("value", id);
+  });
+
+  // Event listener for dropdown change
+  dropdownMenu.on("change", function() {
+    const selectedSample = dropdownMenu.property("value");
+    updateDashboard(data, selectedSample);
+  });
 });
 
-// Initialize the dashboard at start up 
-function init() {
+// Initialise Dashboard to start dashboard at start up
+function initDashboard(data, initialSample) {
+  buildMetadata(data.metadata, initialSample);
+  buildBarChart(data.samples, initialSample);
+  buildBubbleChart(data.samples, initialSample);
+}
 
-    // Use D3 to select the dropdown menu
-    let dropdownMenu = d3.select("#selDataset");
+// Update Dashboard to update the dashboard when the sample is changed.
+function updateDashboard(data, selectedSample) {
+  buildMetadata(data.metadata, selectedSample);
+  buildBarChart(data.samples, selectedSample);
+  buildBubbleChart(data.samples, selectedSample);
+}
 
-    // Use D3 to get sample names and populate the drop-down selector
-    d3.json(url).then((data) => {
-        
-        // Set a variable for the sample names
-        let names = data.names;
+/// The following functions have been set up to make the code modular
 
-        // Add  samples to dropdown menu
-        names.forEach((id) => {
+// Step 1 : BuildMetaData -
+function buildMetadata(metadata, sample) {
+  const selectedData = metadata.find((item) => item.id === +sample);
+  const sampleMetadata = d3.select("#sample-metadata");
+  sampleMetadata.html("");
+  Object.entries(selectedData).forEach(([key, value]) => {
+    sampleMetadata.append("h5").html(`${key}: <b>${value}<b>`); // Use <b> tag to make the title bold;
+  });
+}
 
-            // Log the value of id for each iteration of the loop
-            console.log(id);
+// Step 2 Build Bar Chart as its own function
+function buildBarChart(samples, sample) {
+    const selectedData = samples.find((item) => item.id === sample);
+    const top10OtuIds = selectedData.otu_ids.slice(0, 10).map((id) => `OTU ${id}`).reverse();
+    const top10SampleValues = selectedData.sample_values.slice(0, 10).reverse();
+    const top10OtuLabels = selectedData.otu_labels.slice(0, 10).reverse();
 
-            dropdownMenu.append("option")
-            .text(id)
-            .property("value",id);
-        });
+    // Define the custom color scale from dark blue to light blue
+    const minColor = '#00008B'; // Dark blue
+    const maxColor = '#808080'; // Grey
 
-        // Set the first sample from the list
-        let sample_one = names[0];
+    // Calculate the color for each bar based on the range of values
+    const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                          .domain([Math.min(...top10SampleValues), Math.max(...top10SampleValues)]);
 
-        // Log the value of sample_one
-        console.log(sample_one);
+    const trace = {
+      x: top10SampleValues,
+      y: top10OtuIds,
+      text: top10OtuLabels,
+      type: "bar",
+      orientation: "h",
+      marker: {
+        color: top10SampleValues.map(value => colorScale(value))
+      }
+    };
 
-        // Build the initial plots
-        buildMetadata(sample_one);
-        buildBarChart(sample_one);
-        buildBubbleChart(sample_one);
-        buildGaugeChart(sample_one);
+    const layout = {
+      title: {
+        text: "<b>Top 10 OTUs Present</b>", // Use <b> tag to make the title bold
+      }
+    };
 
-    });
-};
+    Plotly.newPlot("bar", [trace], layout);
+}
+  
+  // Step 3 Build Bar Chart as its own function
+  function buildBubbleChart(samples, sample) {
+    const selectedData = samples.find((item) => item.id === sample);
+    const trace1 = {
+      x: selectedData.otu_ids,
+      y: selectedData.sample_values,
+      text: selectedData.otu_labels,
+      mode: "markers",
+      marker: {
+        size: selectedData.sample_values,
+        color: selectedData.otu_ids,
+        colorscale: "Earth"
+      }
+    };
+  
+    const layout = {
+      title: {
+        text: "<b>Bacteria Per Sample</b>", // Use <b> tag to make the title bold
+      },
+      hovermode: "closest",
+      xaxis: { title: "OTU ID" }
+    };
+  
+    Plotly.newPlot("bubble", [trace1], layout);
+  }
+  
 
-// Display the sample metadata, i.e., an individual's demographic information.
-// Display each key-value pair from the metadata JSON object somewhere on the page.
-// -------------------------
-
-// Function that populates metadata info
-function buildMetadata(sample) {
-
-    // Use D3 to retrieve all of the data
-    d3.json(url).then((data) => {
-
-        // Retrieve all metadata
-        let metadata = data.metadata;
-
-        // Filter based on the value of the sample
-        let value = metadata.filter(result => result.id == sample);
-
-        // Log the array of metadata objects after the have been filtered
-        console.log(value)
-
-        // Get the first index from the array
-        let valueData = value[0];
-
-        // Clear out metadata
-        d3.select("#sample-metadata").html("");
-
-        // Use Object.entries to add each key/value pair to the panel
-        Object.entries(valueData).forEach(([key,value]) => {
-
-            // Log the individual key/value pairs as they are being appended to the metadata panel
-            console.log(key,value);
-
-            d3.select("#sample-metadata").append("h5").text(`${key}: ${value}`);
-        });
-    });
-
-};
-
-
-// Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
-// -------------------
-// Function that builds the bar chart
-
-function buildBarChart(sample) {
-
-    // Use D3 to retrieve all of the data
-    d3.json(url).then((data) => {
-
-        // Retrieve all sample data
-        let sampleInfo = data.samples;
-
-        // Filter based on the value of the sample
-        let value = sampleInfo.filter(result => result.id == sample);
-
-        // Get the first index from the array
-        let valueData = value[0];
-
-        // Get the otu_ids, lables, and sample values
-        let otu_ids = valueData.otu_ids;
-        let otu_labels = valueData.otu_labels;
-        let sample_values = valueData.sample_values;
-
-        // Log the data to the console
-        console.log(otu_ids,otu_labels,sample_values);
-
-        // Set top ten items to display in descending order
-        let yticks = otu_ids.slice(0,10).map(id => `OTU ${id}`).reverse();
-        let xticks = sample_values.slice(0,10).reverse();
-        let labels = otu_labels.slice(0,10).reverse();
-        
-        // Set up the trace for the bar chart
-        let trace = {
-            x: xticks,
-            y: yticks,
-            text: labels,
-            type: "bar",
-            orientation: "h"
-        };
-
-        // Setup the layout
-        let layout = {
-            title: "Top 10 OTUs Present"
-        };
-
-        // Call Plotly to plot the bar chart
-        Plotly.newPlot("bar", [trace], layout)
-    });
-};
-
-
-// Update all the plots when a new sample is selected. Additionally, you are welcome to create any layout that you would like for your dashboard
-// --------------------------------------------
-// Function that updates dashboard when sample is changed
-function optionChanged(value) { 
-
-    // Log the new value
-    console.log(value); 
-
-    // Call all functions 
-    buildMetadata(value);
-    buildBarChart(value);
-
-};
-
-// Call the initialize function
-init();
+    // Step 4 Build buildGaugeChart
+//   function buildGaugeChart(metadata, sample) {

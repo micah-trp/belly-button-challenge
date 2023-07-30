@@ -56,6 +56,7 @@ function buildBarChart(samples, sample) {
     const top10OtuLabels = selectedData.otu_labels.slice(0, 10).reverse();
 
     // Define the custom color scale from dark blue to light blue
+    //// ammend color of barchart depending on volume- 
     const minColor = '#00008B'; // Dark blue
     const maxColor = '#808080'; // Grey
 
@@ -109,6 +110,6 @@ function buildBarChart(samples, sample) {
     Plotly.newPlot("bubble", [trace1], layout);
   }
   
-
     // Step 4 Build buildGaugeChart
-//   function buildGaugeChart(metadata, sample) {
+//   function buildGaugeChart(
+
